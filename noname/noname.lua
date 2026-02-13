@@ -21,7 +21,7 @@
 
 addon.name      = 'noname';
 addon.author    = 'atom0s, hXI fix by Zanzah';
-addon.version   = '1.2';
+addon.version   = '1.3';
 addon.desc      = 'Removes the local player name.';
 addon.link      = 'https://ashitaxi.com/';
 
@@ -36,7 +36,7 @@ local noname = T{
 
 --[[
 * event: load
-* desc : Event called when the addon is being loaded.
+* desc : Event called on load.
 --]]
 ashita.events.register('load', 'load_cb', function ()
     -- Try to locate the pattern.
@@ -56,15 +56,23 @@ end);
 
 --[[
 * event: unload
-* desc : Event called when the addon is being unloaded.
+* desc : Event called on unload.
 --]]
 ashita.events.register('unload', 'unload_cb', function ()
-    -- Restore original entity update patch only if applied.
+    -- Restore original entity update patch if applied.
     if (noname.pointer ~= 0) then
         ashita.memory.write_uint8(noname.pointer + 0x02, 0xF7);
         noname.pointer = 0;
     end
+
+    -- If in flag-only mode, revert local players render flag once.
+    local e = GetPlayerEntity();
+    if (e ~= nil and e.ActorPointer ~= 0 and e.Type == 0) then
+        -- Clear invis-name mask (0x08).
+        e.Render.Flags2 = bit.band(e.Render.Flags2, bit.bnot(0x08));
+    end
 end);
+
 
 --[[
 * event: d3d_present
