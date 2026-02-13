@@ -39,17 +39,17 @@ local noname = T{
 * desc : Event called when the addon is being loaded.
 --]]
 ashita.events.register('load', 'load_cb', function ()
-    -- Try to locate the needed pattern. This may fail on custom/private server clients.
+    -- Try to locate the pattern.
     local ptr = ashita.memory.find(0, 0, '83E1F789882801000033C0668B4608', 0, 0);
 
-    -- If not found, do NOT error out. We can still function using the d3d_present flag enforcement.
+    -- If not found, use d3d_present flag.
     if (ptr == 0) then
         noname.pointer = 0;
         print(chat.header(addon.name):append(chat.warning('Warning: Pointer signature not found. Running in flag-only mode.')));
         return;
     end
 
-    -- Store the pointer and apply the patch (optional enhancement when signature matches).
+    -- Store pointer and apply patch.
     noname.pointer = ptr;
     ashita.memory.write_uint8(noname.pointer + 0x02, 0xF8);
 end);
@@ -59,7 +59,7 @@ end);
 * desc : Event called when the addon is being unloaded.
 --]]
 ashita.events.register('unload', 'unload_cb', function ()
-    -- Restore original entity update patch only if we successfully applied it.
+    -- Restore original entity update patch only if applied.
     if (noname.pointer ~= 0) then
         ashita.memory.write_uint8(noname.pointer + 0x02, 0xF7);
         noname.pointer = 0;
@@ -68,7 +68,7 @@ end);
 
 --[[
 * event: d3d_present
-* desc : Event called when the Direct3D device is presenting a scene.
+* desc : Event called > Direct3D device present.
 --]]
 ashita.events.register('d3d_present', 'present_cb', function ()
     local e = GetPlayerEntity();
